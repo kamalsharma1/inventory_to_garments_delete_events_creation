@@ -1,27 +1,47 @@
 INSERT INTO `GARMENT_EVENTS_TABLE`
 
-SELECT inventory.sku_id  as skuId , garments.receivedDate as receivedDate, inventory.po_id as poid, cast(inventory.unit_cost as NUMERIC) as cost, inventory.garment_id as id, NULL as fingerprint, inventory.location_id as locationId , inventory.location_desc as locationDesc , inventory.event_type, inventory.event_subtype, inventory.event_datetime
- from 
-  (
-      SELECT inventory.* FROM 
-        (
-          SELECT 
-            po_id, garment_id, sku_id, event_type, event_subtype as inventory_event_subtype, event_subtype, event_datetime, unit_cost, location_id, location_desc 
-          FROM `INVENTORY_EVENTS_TABLE` where event_type = "GARMENT_DELETE"
-         ) inventory
-      LEFT JOIN
-        (
-          select 
-            id
-          FROM
-            `GARMENT_EVENTS_TABLE` garments where  event_subtype = "garment_delete"
-        ) as garment
-      ON inventory.garment_id = garment.id
-      where garment.id  is null
-  ) inventory
-LEFT JOIN 
+SELECT
+  inventory.sku_id AS skuId,
+  garments.receivedDate AS receivedDate,
+  inventory.po_id AS poid,
+  CAST(0 AS NUMERIC) AS cost,
+  inventory.garment_id AS id,
+  NULL AS fingerprint,
+  NULL AS locationId,
+  NULL AS locationDesc,
+  "garment_event" as event_type,
+  "garment_delete" as event_subtype,
+  inventory.event_datetime
+FROM (
+  SELECT
+    inventory.*
+  FROM (
+    SELECT
+      po_id,
+      garment_id,
+      sku_id,
+      event_type,
+      event_subtype AS inventory_event_subtype,
+      event_subtype,
+      event_datetime
+    FROM
+      `INVENTORY_EVENTS_TABLE`
+    WHERE
+      event_type = "GARMENT_DELETE" ) inventory
+  LEFT JOIN (
+    SELECT
+      id
+    FROM
+      `GARMENT_EVENTS_TABLE` garments
+    WHERE
+      event_subtype = "garment_delete" ) AS garment
+  ON
+    inventory.garment_id = garment.id
+  WHERE
+    garment.id IS NULL ) inventory
+LEFT JOIN
   `GARMENT_EVENTS_TABLE` garments
-ON   
+ON
   garments.id = inventory.garment_id
-and 
-  (garments.event_subtype = "garment_event" OR garments.event_subtype = "garment_create")
+  AND (garments.event_subtype = "garment_event"
+    OR garments.event_subtype = "garment_create")
