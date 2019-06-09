@@ -1,4 +1,4 @@
-# big-query-backup and inventory-to-garments delete events
+# Inventory-to-garments delete events creation
 Bash script to backup table & create garments delete events from inventory delete events in a google big query table
 
 ## Working on
