@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o errexit \
+    -o pipefail \
+    -o xtrace
+
 declare -r PROJECT_ID=$1
 [[ -z "${PROJECT_ID// }" ]] && exit
 
@@ -20,6 +24,7 @@ declare -r INVENTORY_TABLE_NAME=$6
 
 source ./bq.sh
 
+# sql query and schema file name
 garment_events_select_query_file_name=queries/garment_events_select_query.sql
 garment_events_insert_query_file_name=queries/garment_events_insert_query.sql
 
@@ -30,16 +35,16 @@ backup_affected_rows_table_name_postfix=_insertable
 # full table name with project id, dataset and table name
 inventory_data_table_name=${PROJECT_ID}.${INVENTORY_DATASET_NAME}.${INVENTORY_TABLE_NAME}
 garments_data_table_name=${PROJECT_ID}.${GARMENTS_DATASET_NAME}.${GARMENTS_TABLE_NAME}
-
 backup_inventory_data_table_name=${PROJECT_ID}:${BACKUP_DATASET_NAME}.${INVENTORY_TABLE_NAME}${backup_table_name_postfix}
 backup_garments_data_table_name=${PROJECT_ID}:${BACKUP_DATASET_NAME}.${GARMENTS_TABLE_NAME}${backup_table_name_postfix}
 backup_affected_rows_table_name=${PROJECT_ID}:${BACKUP_DATASET_NAME}.${INVENTORY_TABLE_NAME}${backup_affected_rows_table_name_postfix}
 
-# read table query from file
+# read table query and repalce Garments and Inventory table
 garment_event_select_query=$(readfile $garment_events_select_query_file_name)
 garment_event_select_query=$(replace_string "$garment_event_select_query" "GARMENT_EVENTS_TABLE" $garments_data_table_name)
 garment_event_select_query=$(replace_string "$garment_event_select_query" "INVENTORY_EVENTS_TABLE" $inventory_data_table_name)
 
+# read table query and repalce Garments and Inventory table
 garment_event_create_query=$(readfile $garment_events_insert_query_file_name)
 garment_event_create_query=$(replace_string "$garment_event_create_query" "GARMENT_EVENTS_TABLE" $garments_data_table_name)
 garment_event_create_query=$(replace_string "$garment_event_create_query" "INVENTORY_EVENTS_TABLE" $inventory_data_table_name)
