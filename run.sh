@@ -28,7 +28,7 @@ source ./bq.sh
 garment_events_select_query_file_name=queries/garment_events_select_query.sql
 garment_events_insert_query_file_name=queries/garment_events_insert_query.sql
 
-# backup data postfix
+# backup data table name postfix
 backup_table_name_postfix=_backup
 backup_affected_rows_table_name_postfix=_insertable
 
@@ -39,24 +39,24 @@ backup_inventory_data_table_name=${PROJECT_ID}:${BACKUP_DATASET_NAME}.${INVENTOR
 backup_garments_data_table_name=${PROJECT_ID}:${BACKUP_DATASET_NAME}.${GARMENTS_TABLE_NAME}${backup_table_name_postfix}
 backup_affected_rows_table_name=${PROJECT_ID}:${BACKUP_DATASET_NAME}.${INVENTORY_TABLE_NAME}${backup_affected_rows_table_name_postfix}
 
-# read table query and repalce Garments and Inventory table
+# read table query and repalce Garments and Inventory table name
 garment_event_select_query=$(readfile $garment_events_select_query_file_name)
 garment_event_select_query=$(replace_string "$garment_event_select_query" "GARMENT_EVENTS_TABLE" $garments_data_table_name)
 garment_event_select_query=$(replace_string "$garment_event_select_query" "INVENTORY_EVENTS_TABLE" $inventory_data_table_name)
 
-# read table query and repalce Garments and Inventory table
+# read table query and repalce Garments and Inventory table name
 garment_event_create_query=$(readfile $garment_events_insert_query_file_name)
 garment_event_create_query=$(replace_string "$garment_event_create_query" "GARMENT_EVENTS_TABLE" $garments_data_table_name)
 garment_event_create_query=$(replace_string "$garment_event_create_query" "INVENTORY_EVENTS_TABLE" $inventory_data_table_name)
 
-# Backup original table in new table-> creation of backup table 
+# Backup inventory table in new table-> creation of backup table 
 copy_table ${PROJECT_ID}:${INVENTORY_DATASET_NAME}.${INVENTORY_TABLE_NAME} $backup_inventory_data_table_name
 
-# Backup original table in new table-> creation of backup table 
+# Backup garments table in new table-> creation of backup table 
 copy_table ${PROJECT_ID}:${GARMENTS_DATASET_NAME}.${GARMENTS_TABLE_NAME} $backup_garments_data_table_name
 
-# Copy all deletable records in a backup table for deletable data
+# Copy all affected rows in a backup table as insertable data
 create_table_by_result $backup_affected_rows_table_name "$garment_event_select_query"
 
-# Delete all duplicate records
+# execute insert query
 execute_query "$garment_event_create_query"
