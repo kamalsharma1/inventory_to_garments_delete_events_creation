@@ -1,5 +1,5 @@
-INSERT INTO `GARMENT_EVENTS_TABLE`
-
+INSERT INTO
+  `GARMENT_EVENTS_TABLE`
 SELECT
   inventory.sku_id AS skuId,
   garments.receivedDate AS receivedDate,
@@ -9,8 +9,8 @@ SELECT
   NULL AS fingerprint,
   NULL AS locationId,
   NULL AS locationDesc,
-  "garment_event" as event_type,
-  "garment_delete" as event_subtype,
+  "garment_event" AS event_type,
+  "garment_delete" AS event_subtype,
   inventory.event_datetime
 FROM (
   SELECT
